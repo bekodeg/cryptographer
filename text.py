@@ -3,6 +3,7 @@ class Text():
         with open('library.txt', mode='rt', encoding='utf8') as f:
             self.lib = f.read()
             self.l_n = len(set(self.lib))
+            self.separator = self.lib[-1]
 
     def l_l(self):
         return self.l_n

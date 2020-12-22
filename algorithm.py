@@ -1,7 +1,6 @@
 import text
 import random
 import math
-text = text.Text()
 
 
 def order(a, s):
@@ -14,6 +13,7 @@ def order(a, s):
 class Cipher:
     def __init__(self):
         self.info = ''
+        self.text = text.Text()
 
     def encryption_fun(self, *args):
         pass
@@ -50,29 +50,15 @@ class Caesar(Cipher):
         return res
 
     def key_check(self, key, size):
-        res = []
-        for i in key:
-            d = ''
-            for j in range(len(i)):
-                if i[j].isdigit():
-                    d += i[j]
-                else:
-                    if d:
-                        r = int(d) % 256
-                        res.append(r)
-                    r = ord(i[j])
-                    res.append(r)
-            if d:
-                r = int(d) % 256
-                res.append(r)
-        return True, res
+        key = ''.join(key.split(self.text.separator))
+        return True, self.text.to_string(key)[0]
 
-    def key_generator(self, size=8, **kwargs):
+    def key_generator(self, size=256, bin_mode=True, **kwargs):
         n = random.randint(1, size)
         res = []
         for _ in range(n):
             res.append(random.randint(1, size - 1))
-        return ''.join(list(map(str, res)))
+        return self.text.to_string(res)[1]
 
 
 class MonoCipher(Cipher):
@@ -99,13 +85,33 @@ class MonoCipher(Cipher):
         if len(set(key)) < size:
             return False,
         else:
-            return True, text.to_string(key)[0]
+            return True, self.text.to_string(key)[0]
 
-    def key_generator(self, size=8, l_n=text.lib):
-        res = list(l_n)
+    def key_generator(self, size):
+        res = list(range(size))
         random.shuffle(res)
         print(res)
-        return ''.join(res)
+        return ''.join(self.text.to_string(res)[1])
+
+
+class MonoCipherBin(MonoCipher):
+    def key_check(self, key, size=256):
+        key = key.split(self.text.separator)
+        print(len(set(key)), size)
+        try:
+            key = list(map(int, key))
+        except ValueError:
+            return False,
+        if len(set(key)) < size:
+            return False,
+        else:
+            return True, key
+
+    def key_generator(self, size=256):
+        res = list(range(size))
+        random.shuffle(res)
+        res = list(map(str, res))
+        return self.text.separator.join(res)
 
 
 class TranspositionCipher(Cipher):
@@ -138,8 +144,8 @@ class TranspositionCipher(Cipher):
             pass
         elif not key.isdigit():
             res = 0
-            key = text.to_string(key)[0]
-            r = text.l_l()
+            key = self.text.to_string(key)[0]
+            r = self.text.l_l()
             for i in range(len(key)):
                 res += (key[-i - 1] * order(r, i))
             key = res

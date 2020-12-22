@@ -61,7 +61,7 @@ class Cryptographer(QMainWindow):
     def lib_update(self):
         self.text = text.Text()
         self.alg_t = [algorithm.Caesar(), algorithm.MonoCipher(), algorithm.TranspositionCipher()]
-        self.alg_b = [algorithm.TranspositionCipher(), algorithm.MonoCipher()]
+        self.alg_b = [algorithm.TranspositionCipher(), algorithm.MonoCipherBin()]
         self.check_key()
 
     def encryption(self):
@@ -133,11 +133,11 @@ class Cryptographer(QMainWindow):
     def save_txt(self):
         try:
             if self.txt_mode.isChecked():
-                f_name = QFileDialog.getOpenFileName(self, 'выбрать файл', '', 'Текстовый файл (*.txt)')[0]
+                f_name = QFileDialog.getSaveFileName(self, 'выбрать файл', '', 'Текстовый файл (*.txt)')[0]
                 with open(f_name, mode='wt', encoding='utf8') as f:
                     f.write(self.out.toPlainText())
             else:
-                f_name = QFileDialog.getOpenFileName(
+                f_name = QFileDialog.getSaveFileName(
                     self, 'выбрать файл', '', "Картинка (*.png *.xpm *.jpg);;"
                                               "Текстовый файл (*.txt);;"
                                               "Все файлы (*)")[0]
@@ -154,7 +154,7 @@ class Cryptographer(QMainWindow):
         if self.txt_mode.isChecked():
             res = self.chip.key_check(key, self.text.l_l())
         else:
-            res = self.chip.key_check(key, 8)
+            res = self.chip.key_check(key, 256)
         print('ok2')
         if not res[0]:
             self.hint.setText('неверный ключ')
@@ -163,6 +163,7 @@ class Cryptographer(QMainWindow):
         elif self.hint.text() == 'неверный ключ':
             self.hint.setText('')
         self.key = res[1]
+        print(self.key)
         print(*self.key)
 
     def generator(self):
@@ -170,7 +171,7 @@ class Cryptographer(QMainWindow):
             key = self.chip.key_generator(self.text.l_l())
             self.key_line.setText(key)
         else:
-            self.key_line.setText(self.chip.key_generator(8, l_n=list(range(8))))
+            self.key_line.setText(self.chip.key_generator(size=256))
         self.check_key()
 
     def save_key(self):
@@ -207,8 +208,8 @@ class LibWidget(QWidget):
     def save(self):
         with open('library.txt', mode='wt', encoding='utf8') as f:
             f.write(self.line.toPlainText())
-            self.l_b()
-            self.destroy()
+        self.l_b()
+        self.destroy()
 
     def open(self):
         with open('library.txt', mode='rt', encoding='utf8') as f:
